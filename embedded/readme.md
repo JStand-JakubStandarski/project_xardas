@@ -1,3 +1,13 @@
-# Project XARDAS
-## Embedded
-01001000 01100101 01101100 01101100 01101111 00100000 01010111 01101111 01110010 01101100 01100100 00100001
+# Project XARDAS (Embedded)
+
+- [Introduction](#introduction)
+
+
+
+## Introduction
+
+The embedded part of `Project XARDAS` includes small electronic device
+responsible of collecting measurement data from the environment (indoor or
+outdoor depending on device placement) and then sending these data to the web
+application using external WiFi module.
+
