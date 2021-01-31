@@ -53,7 +53,7 @@ the web application. For prototype purposes `ESP-01 ESP8266` has been chosen.
 ---
 `embedded_device` directory consists of the following subdirectories:
 
-- `workspace`: collects all the files related strictly with the device
+- `firmware`: collects all the files related strictly with the device
    firmware, i.e. CMSIS, LL API (peripheral drivers), application code,
    compiled binaries, etc.;
 
