@@ -1,6 +1,6 @@
 #
 # Author: Jakub Standarski
-# Email: jakub.standarski@gmail.com
+# Email: jstand.jakub.standarski@gmail.com
 #
 # Date: 02.02.2021
 #
@@ -116,7 +116,7 @@ CFLAGS += $(PREPROCESSOR_OPTIONS)
 LINKER_SCRIPT_FILE = ./linker/stm32l432kc_flash.ld
 
 LINKER_OPTIONS = -Wl,--gc-sections
-LINKER_OPTIONS += -Wl,-Map="$(BUILD_DIR)/$(PROJECT_NAME).map"
+LINKER_OPTIONS += -Wl,-Map="$(BUILD_DIR)/$(PROJECT_NAME)_firmware.map"
 LINKER_OPTIONS += -Wl,--print-memory-usage
 LINKER_OPTIONS += --specs=nosys.specs
 
@@ -175,19 +175,4 @@ $(ELF_FILE): $(SOURCE_FILES)
 
 clean:
 	rm -rf $(BUILD_DIR)
-
-
-
-###############################################################################
-# FLASH PROCEDURE #
-###############################################################################
-
-FLASH_START_ADDRESS = 0x08000000
-
-
-flash:
-	st-flash write $(BIN_FILE) $(FLASH_START_ADDRESS)
-
-erase:
-	st-flash erase
 
