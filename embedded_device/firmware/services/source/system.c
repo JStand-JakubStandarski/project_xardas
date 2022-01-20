@@ -70,7 +70,10 @@ void system_init(void)
     }
     LL_SetSystemCoreClock(system_clock_speed_hz);
 
-    LL_Init1msTick(system_clock_speed_hz);
+    /* Note: It has to be commented out while using FreeRTOS.
+     *
+     * LL_Init1msTick(system_clock_speed_hz);
+     */
 
     LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_1);
     LL_RCC_SetAPB1Prescaler(LL_RCC_APB1_DIV_1);
