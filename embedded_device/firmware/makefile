@@ -54,6 +54,17 @@ SERVICES_SOURCE_FILES = $(wildcard $(SERVICES_DIR)/source/*.c)
 
 
 ###############################################################################
+# FREERTOS INFO #
+###############################################################################
+
+FREERTOS_DIR = ./freertos
+
+FREERTOS_HEADER_FILES = $(FREERTOS_DIR)/include
+FREERTOS_SOURCE_FILES = $(wildcard $(FREERTOS_DIR)/source/*.c)
+
+
+
+###############################################################################
 # DRIVERS INFO #
 ###############################################################################
 
@@ -150,12 +161,14 @@ BIN_FILE = $(addprefix $(BUILD_DIR)/, $(PROJECT_NAME)_firmware.bin)
 HEADER_FILES = -I./
 HEADER_FILES += -I$(APP_HEADER_FILES)
 HEADER_FILES += -I$(SERVICES_HEADER_FILES)
+HEADER_FILES += -I$(FREERTOS_HEADER_FILES)
 HEADER_FILES += -I$(DRIVERS_CMSIS_CORE_HEADER_FILES)
 HEADER_FILES += -I$(DRIVERS_CMSIS_DEVICE_HEADER_FILES)
 HEADER_FILES += -I$(DRIVERS_LL_API_HEADER_FILES)
 
 SOURCE_FILES = $(APP_SOURCE_FILES)
 SOURCE_FILES += $(SERVICES_SOURCE_FILES)
+SOURCE_FILES += $(FREERTOS_SOURCE_FILES)
 SOURCE_FILES += $(DRIVERS_CMSIS_DEVICE_SOURCE_FILES)
 SOURCE_FILES += $(DRIVERS_LL_API_SOURCE_FILES)
 
