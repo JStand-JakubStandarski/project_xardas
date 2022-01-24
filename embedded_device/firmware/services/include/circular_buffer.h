@@ -41,6 +41,17 @@ circular_buffer_t circular_buffer_init(void);
 
 
 
+/**
+ * @brief   Return circular buffer to the available pool.
+ *
+ * @param   circular_buffer - handle to the circular buffer.
+ *
+ * @retval  None.
+ */
+void circular_buffer_close(circular_buffer_t circular_buffer);
+
+
+
 
 
 #endif /* CIRCULAR_BUFFER_H */
