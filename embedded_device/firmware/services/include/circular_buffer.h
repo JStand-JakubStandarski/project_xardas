@@ -111,6 +111,15 @@ void circular_buffer_write_data(circular_buffer_t circular_buffer,
 
 
 
+/**
+ * @brief   Read data byte from circular buffer.
+ *
+ * @param   circular_buffer - handle to the circular buffer.
+ *
+ * @retval  Data byte read from circular buffer.
+ */
+uint8_t circular_buffer_read_data(circular_buffer_t circular_buffer);
+
 
 
 #endif /* CIRCULAR_BUFFER_H */

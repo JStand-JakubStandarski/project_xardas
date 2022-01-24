@@ -155,3 +155,23 @@ void circular_buffer_write_data(circular_buffer_t circular_buffer,
 
 
 
+uint8_t circular_buffer_read_data(circular_buffer_t circular_buffer)
+{
+    uint8_t data = 0;
+
+    if ((circular_buffer != NULL) && circular_buffer->assigned) {
+        if (circular_buffer->data_count > 0) {
+
+            if (circular_buffer->tail == DATA_BUFFER_SIZE_MAX) {
+                circular_buffer->tail = 0;
+            }
+
+            data = circular_buffer->data_buffer[circular_buffer->tail];
+            --circular_buffer->data_count;
+            ++circular_buffer->tail;
+        }
+    }
+
+    return data;
+}
+
