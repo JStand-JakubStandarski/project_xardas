@@ -52,6 +52,17 @@ void circular_buffer_close(circular_buffer_t circular_buffer);
 
 
 
+/**
+ * @brief   Reset circular buffer.
+ *
+ * @param   circular_buffer - handle to the circular buffer.
+ *
+ * @retval  None.
+ */
+void circular_buffer_reset(circular_buffer_t circular_buffer);
+
+
+
 
 
 #endif /* CIRCULAR_BUFFER_H */

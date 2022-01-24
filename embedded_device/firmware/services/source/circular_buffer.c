@@ -84,3 +84,15 @@ void circular_buffer_close(circular_buffer_t circular_buffer)
 
 
 
+void circular_buffer_reset(circular_buffer_t circular_buffer)
+{
+    if ((circular_buffer != NULL) && circular_buffer->assigned) {
+        memset(circular_buffer->data_buffer, 0, DATA_BUFFER_SIZE_MAX);
+        circular_buffer->data_count = 0;
+        circular_buffer->head = 0;
+        circular_buffer->tail = 0;
+    }
+}
+
+
+
