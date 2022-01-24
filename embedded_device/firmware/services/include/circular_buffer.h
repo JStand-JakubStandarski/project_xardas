@@ -8,6 +8,16 @@
 #ifndef CIRCULAR_BUFFER_H
     #define CIRCULAR_BUFFER_H
 
+/*****************************************************************************/
+/* HEADER FILES */
+/*****************************************************************************/
+
+#include <stdbool.h>
+#include <stddef.h>
+#include <stdint.h>
+
+
+
 
 
 #endif /* CIRCULAR_BUFFER_H */
