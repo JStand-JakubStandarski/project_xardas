@@ -96,3 +96,16 @@ void circular_buffer_reset(circular_buffer_t circular_buffer)
 
 
 
+bool circular_buffer_is_full(const circular_buffer_t circular_buffer)
+{
+    bool is_full = false;
+
+    if ((circular_buffer != NULL) && circular_buffer->assigned) {
+        is_full = (bool)(circular_buffer->data_count == DATA_BUFFER_SIZE_MAX);
+    }
+
+    return is_full;
+}
+
+
+
