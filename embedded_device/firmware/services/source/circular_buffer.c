@@ -109,3 +109,16 @@ bool circular_buffer_is_full(const circular_buffer_t circular_buffer)
 
 
 
+bool circular_buffer_is_empty(const circular_buffer_t circular_buffer)
+{
+    bool is_empty = false;
+
+    if ((circular_buffer != NULL) && circular_buffer->assigned) {
+        is_empty = (bool)(circular_buffer->data_count == 0);
+    }
+
+    return is_empty;
+}
+
+
+

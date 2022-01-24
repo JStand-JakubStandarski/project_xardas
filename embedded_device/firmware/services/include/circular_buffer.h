@@ -74,6 +74,17 @@ bool circular_buffer_is_full(const circular_buffer_t circular_buffer);
 
 
 
+/**
+ * @brief   Check if circular buffer is empty.
+ *
+ * @param   circular_buffer - handle to the circular buffer.
+ *
+ * @retval  Empty (true), not empty (false).
+ */
+bool circular_buffer_is_empty(const circular_buffer_t circular_buffer);
+
+
+
 
 
 #endif /* CIRCULAR_BUFFER_H */
