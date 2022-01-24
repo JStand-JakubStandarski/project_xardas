@@ -122,3 +122,17 @@ bool circular_buffer_is_empty(const circular_buffer_t circular_buffer)
 
 
 
+size_t circular_buffer_get_free_space_size(
+    const circular_buffer_t circular_buffer)
+{
+    size_t free_space_size = 0;
+
+    if ((circular_buffer != NULL) && circular_buffer->assigned) {
+        free_space_size = DATA_BUFFER_SIZE_MAX - circular_buffer->data_count;
+    }
+
+    return free_space_size;
+}
+
+
+

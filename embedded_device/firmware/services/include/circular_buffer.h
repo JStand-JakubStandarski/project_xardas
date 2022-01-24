@@ -85,6 +85,18 @@ bool circular_buffer_is_empty(const circular_buffer_t circular_buffer);
 
 
 
+/**
+ * @brief   Get a size of available free space (in bytes).
+ *
+ * @param   circular_buffer - handle to the circular buffer.
+ *
+ * @retval  Size of available free space (in bytes).
+ */
+size_t circular_buffer_get_free_space_size(
+    const circular_buffer_t circular_buffer);
+
+
+
 
 
 #endif /* CIRCULAR_BUFFER_H */
