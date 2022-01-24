@@ -26,6 +26,21 @@ typedef struct circular_buffer *circular_buffer_t;
 
 
 
+/*****************************************************************************/
+/* PUBLIC API */
+/*****************************************************************************/
+
+/**
+ * @brief   Initialize circular buffer.
+ *
+ * @param   None.
+ *
+ * @retval  Handle to the circular buffer.
+ */
+circular_buffer_t circular_buffer_init(void);
+
+
+
 
 
 #endif /* CIRCULAR_BUFFER_H */
