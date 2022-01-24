@@ -97,6 +97,20 @@ size_t circular_buffer_get_free_space_size(
 
 
 
+/**
+ * @brief   Write data byte into circular buffer.
+ *
+ * @param   circular_buffer - handle to the circular buffer.
+ *
+ * @param   data - data byte to be written into circular buffer.
+ *
+ * @retval  None.
+ */
+void circular_buffer_write_data(circular_buffer_t circular_buffer,
+    const uint8_t data);
+
+
+
 
 
 #endif /* CIRCULAR_BUFFER_H */

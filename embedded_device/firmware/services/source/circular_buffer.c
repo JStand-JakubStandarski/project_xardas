@@ -136,3 +136,22 @@ size_t circular_buffer_get_free_space_size(
 
 
 
+void circular_buffer_write_data(circular_buffer_t circular_buffer,
+    const uint8_t data)
+{
+    if ((circular_buffer != NULL) && circular_buffer->assigned) {
+        if (circular_buffer->data_count < DATA_BUFFER_SIZE_MAX) {
+
+            if (circular_buffer->head == DATA_BUFFER_SIZE_MAX) {
+                circular_buffer->head = 0;
+            }
+
+            circular_buffer->data_buffer[circular_buffer->head] = data;
+            ++circular_buffer->data_count;
+            ++circular_buffer->head;
+        }
+    }
+}
+
+
+
