@@ -41,3 +41,34 @@
 
 
 
+/*****************************************************************************/
+/* PRIVATE HELPER FUNCTIONS PROTOTYPES */
+/*****************************************************************************/
+
+static void debug_uart_gpio_init(void);
+
+
+
+/*****************************************************************************/
+/* PRIVATE HELPER FUNCTIONS DEFINITIONS */
+/*****************************************************************************/
+
+static void debug_uart_gpio_init(void)
+{
+    if (LL_AHB2_GRP1_IsEnabledClock(DEBUG_UART_GPIO_CLOCK) == 0) {
+        LL_AHB2_GRP1_EnableClock(DEBUG_UART_GPIO_CLOCK);
+    }
+
+    LL_GPIO_InitTypeDef uart_gpio_config = {
+        .Pin = DEBUG_UART_GPIO_PIN_TX,
+        .Mode = LL_GPIO_MODE_ALTERNATE,
+        .Speed = LL_GPIO_SPEED_FREQ_LOW,
+        .OutputType = LL_GPIO_OUTPUT_PUSHPULL,
+        .Pull = LL_GPIO_PULL_NO,
+        .Alternate = DEBUG_UART_GPIO_PIN_ALTERNATE_FUNCTION
+    };
+    LL_GPIO_Init(DEBUG_UART_GPIO_PORT, &uart_gpio_config);
+}
+
+
+
