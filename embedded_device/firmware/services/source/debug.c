@@ -25,3 +25,19 @@
 
 
 
+/*****************************************************************************/
+/* PRIVATE MACROS */
+/*****************************************************************************/
+
+#define DEBUG_UART_GPIO_PORT                    GPIOA
+#define DEBUG_UART_GPIO_CLOCK                   LL_AHB2_GRP1_PERIPH_GPIOA
+#define DEBUG_UART_GPIO_PIN_TX                  LL_GPIO_PIN_9
+#define DEBUG_UART_GPIO_PIN_ALTERNATE_FUNCTION  LL_GPIO_AF_7
+
+#define DEBUG_UART_PERIPHERAL_PORT      USART1
+#define DEBUG_UART_PERIPHERAL_IRQ       USART1_IRQn
+#define DEBUG_UART_PERIPHERAL_CLOCK     LL_APB2_GRP1_PERIPH_USART1
+#define DEBUG_UART_PERIPHERAL_BAUDRATE  115200
+
+
+
