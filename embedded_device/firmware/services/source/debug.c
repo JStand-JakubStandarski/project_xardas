@@ -73,6 +73,30 @@ void debug_init(void)
 
 
 
+void debug_printf(const char *const text, ...)
+{
+    size_t output_buffer_size = circular_buffer_get_free_space_size(
+        debug_message_buffer);
+    char *formatted_message = calloc(output_buffer_size, sizeof(char));
+
+    va_list arguments;
+    va_start(arguments, text);
+    vsnprintf(formatted_message, output_buffer_size, text, arguments);
+    va_end(arguments);
+
+    size_t formatted_message_size = strlen(formatted_message);
+    if (formatted_message_size <= output_buffer_size) {
+        for (size_t char_index = 0; char_index < formatted_message_size;
+            ++char_index) {
+                circular_buffer_write_data(debug_message_buffer,
+                    formatted_message[char_index]);
+        }
+        LL_USART_EnableIT_TXE(DEBUG_UART_PERIPHERAL_PORT);
+    };
+
+    free(formatted_message);
+}
+
 
 
 /*****************************************************************************/

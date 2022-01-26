@@ -24,6 +24,17 @@ void debug_init(void);
 
 
 
+/**
+ * @brief   Print custom debug message.
+ *
+ * @param   text - custom text message.
+ *
+ * @param   ... - arguments for text message.
+ *
+ * @retval  None.
+ */
+void debug_printf(const char *const text, ...);
+
 
 
 #endif /* DEBUG_H */
