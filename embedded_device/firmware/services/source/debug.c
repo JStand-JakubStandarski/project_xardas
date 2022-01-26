@@ -59,6 +59,20 @@ static void debug_uart_peripheral_init(void);
 
 
 
+/*****************************************************************************/
+/* PUBLIC API */
+/*****************************************************************************/
+
+void debug_init(void)
+{
+    debug_uart_gpio_init();
+    debug_uart_peripheral_init();
+
+    debug_message_buffer = circular_buffer_init();
+}
+
+
+
 
 
 /*****************************************************************************/
