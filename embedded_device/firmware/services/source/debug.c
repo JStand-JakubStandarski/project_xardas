@@ -145,3 +145,19 @@ static void debug_uart_peripheral_init(void)
 
 
 
+/*****************************************************************************/
+/* IRQ HANDLERS DEFINITIONS */
+/*****************************************************************************/
+
+void USART1_IRQHandler(void)
+{
+    if (LL_USART_IsActiveFlag_TXE(DEBUG_UART_PERIPHERAL_PORT) == 1) {
+        uint8_t data_byte = circular_buffer_read_data(debug_message_buffer);
+        LL_USART_TransmitData8(DEBUG_UART_PERIPHERAL_PORT, data_byte);
+
+        if (circular_buffer_is_empty(debug_message_buffer) == true) {
+            LL_USART_DisableIT_TXE(DEBUG_UART_PERIPHERAL_PORT);
+        }
+    }
+}
+
