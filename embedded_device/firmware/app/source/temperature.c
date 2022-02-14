@@ -81,6 +81,24 @@ static void thermometer_task(void *parameters)
 
 
 /*****************************************************************************/
+/* PUBLIC API */
+/*****************************************************************************/
+
+void thermometer_init(void)
+{
+    gpio_init();
+    adc_init();
+    timer_init();
+
+    xTaskCreate(thermometer_task, "thermometer_task", configMINIMAL_STACK_SIZE,
+        NULL, 2, &thermometer_task_handle);
+
+    thermometer_temperature_mutex = xSemaphoreCreateMutex();
+}
+
+
+
+/*****************************************************************************/
 /* PRIVATE HELPER FUNCTIONS DEFINITIONS */
 /*****************************************************************************/
 

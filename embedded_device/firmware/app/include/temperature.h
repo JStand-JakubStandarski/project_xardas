@@ -8,6 +8,21 @@
 #ifndef THERMOMETER_H
     #define THERMOMETER_H
 
+/*****************************************************************************/
+/* PUBLIC API */
+/*****************************************************************************/
+
+/**
+ * @brief   Initialize thermometer.
+ *
+ * @param   None.
+ *
+ * @retval  None.
+ */
+void thermometer_init(void);
+
+
+
 
 
 
