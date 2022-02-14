@@ -43,6 +43,7 @@ static float thermometer_temperature = 0.0f;
 
 static void gpio_init(void);
 static void adc_init(void);
+static void timer_init(void);
 
 
 
@@ -134,6 +135,39 @@ static void adc_init(void)
 
         LL_ADC_REG_StartConversion(ADC1);
     }
+}
+
+
+
+static void timer_init(void)
+{
+    if (LL_APB1_GRP1_IsEnabledClock(LL_APB1_GRP1_PERIPH_TIM2) != 1) {
+        LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_TIM2);
+    }
+
+    /*
+     * Timer 2 clock source is provided by APB1, which frequency equals 80 MHz.
+     * Operational frequency = clock source / clock prescaler.
+     * Operational frequency = 80 000 000 / 8000 = 10 000 = 10 kHz.
+     * It means that timer counts 10 000 times in 1s, so to get 1s delay,
+     * counter preload value has to be set to 10 000. Accordingly, to get 5s
+     * delay, counter preload value has to be set to 50 000 (5 * 10 000).
+    */
+    const uint16_t timer_source_clock_prescaler = 8000;
+    const uint32_t timer_auto_reload_value = 50000;
+
+    LL_TIM_InitTypeDef timer_config = {
+        .Prescaler = timer_source_clock_prescaler - 1,
+        .CounterMode = LL_TIM_COUNTERMODE_UP,
+        .Autoreload = timer_auto_reload_value,
+        .ClockDivision = LL_TIM_CLOCKDIVISION_DIV1,
+        .RepetitionCounter = 0x00
+    };
+    LL_TIM_Init(TIM2, &timer_config);
+
+    LL_TIM_SetTriggerOutput(TIM2, LL_TIM_TRGO_UPDATE);
+
+    LL_TIM_EnableCounter(TIM2);
 }
 
 
