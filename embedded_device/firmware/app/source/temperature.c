@@ -45,6 +45,7 @@ static void gpio_init(void);
 static void adc_init(void);
 static void timer_init(void);
 
+static float read_sensor_temperature(const uint32_t adc_measurement);
 
 
 /*****************************************************************************/
@@ -168,6 +169,29 @@ static void timer_init(void)
     LL_TIM_SetTriggerOutput(TIM2, LL_TIM_TRGO_UPDATE);
 
     LL_TIM_EnableCounter(TIM2);
+}
+
+
+
+static float read_sensor_temperature(const uint32_t adc_measurement)
+{
+    const float adc_resolution = 4096.0f;
+    const float room_temperature_kelvin = 298.15f;
+    const float balance_resistor = 47200.0f;
+    const float thermistor_room_temperature_resistance = 47000.0f;
+    const float thermistor_beta_coefficient = 3990.0f;
+
+    const float thermistor_measured_resistance = balance_resistor *
+        ((adc_resolution / (float)adc_measurement) - 1.0f);
+
+    const float temperature_kelvin = 1.0f / (1.0f / room_temperature_kelvin +
+        (1.0f / thermistor_beta_coefficient) *
+        (float)log(thermistor_measured_resistance /
+        thermistor_room_temperature_resistance));
+
+    const float temperature_celsius = temperature_kelvin - 273.15f;
+
+    return temperature_celsius;
 }
 
 
