@@ -27,3 +27,13 @@
 
 
 
+/*****************************************************************************/
+/* PRIVATE VARIABLES */
+/*****************************************************************************/
+
+static TaskHandle_t thermometer_task_handle = NULL;
+static SemaphoreHandle_t thermometer_temperature_mutex = NULL;
+static float thermometer_temperature = 0.0f;
+
+
+
