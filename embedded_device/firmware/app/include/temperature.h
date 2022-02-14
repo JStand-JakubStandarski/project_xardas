@@ -23,6 +23,14 @@ void thermometer_init(void);
 
 
 
+/**
+ * @brief   Get temperature measured by thermometer.
+ *
+ * @param   None.
+ *
+ * @retval  Current temperature in Celsius.
+ */
+float thermometer_get_temperature(void);
 
 
 

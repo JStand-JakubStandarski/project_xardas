@@ -98,6 +98,28 @@ void thermometer_init(void)
 
 
 
+float thermometer_get_temperature(void)
+{
+    float current_temperature = -99.9f;
+
+    if (thermometer_temperature_mutex != NULL) {
+
+        TickType_t time_to_wait_ms = 0;
+        BaseType_t return_code = xSemaphoreTake(thermometer_temperature_mutex,
+            pdMS_TO_TICKS(time_to_wait_ms));
+        if (return_code == pdTRUE) {
+
+            current_temperature = thermometer_temperature;
+
+            xSemaphoreGive(thermometer_temperature_mutex);
+        }
+    }
+
+    return current_temperature;
+}
+
+
+
 /*****************************************************************************/
 /* PRIVATE HELPER FUNCTIONS DEFINITIONS */
 /*****************************************************************************/
