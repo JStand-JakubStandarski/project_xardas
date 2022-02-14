@@ -37,3 +37,34 @@ static float thermometer_temperature = 0.0f;
 
 
 
+/*****************************************************************************/
+/* PRIVATE HELPER FUNCTIONS PROTOTYPES */
+/*****************************************************************************/
+
+static void gpio_init(void);
+
+
+
+/*****************************************************************************/
+/* PRIVATE HELPER FUNCTIONS DEFINITIONS */
+/*****************************************************************************/
+
+static void gpio_init(void)
+{
+    if (LL_AHB2_GRP1_IsEnabledClock(LL_AHB2_GRP1_PERIPH_GPIOA) != 1) {
+        LL_AHB2_GRP1_EnableClock(LL_AHB2_GRP1_PERIPH_GPIOA);
+    }
+
+    LL_GPIO_InitTypeDef gpio_config = {
+        .Pin = LL_GPIO_PIN_1,
+        .Mode = LL_GPIO_MODE_ANALOG,
+        .Speed = LL_GPIO_SPEED_FREQ_LOW,
+        .OutputType = LL_GPIO_OUTPUT_PUSHPULL,
+        .Pull = LL_GPIO_PULL_NO,
+        .Alternate = LL_GPIO_AF_0
+    };
+    LL_GPIO_Init(GPIOA, &gpio_config);
+}
+
+
+
