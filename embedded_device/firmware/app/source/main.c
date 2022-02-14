@@ -10,6 +10,8 @@
 /* HEADER FILES */
 /*****************************************************************************/
 
+#include "thermometer.h"
+
 #include "debug.h"
 #include "led.h"
 #include "system.h"
@@ -39,6 +41,7 @@ int main(void)
 {
     system_init();
     debug_init();
+    thermometer_init();
     led_init(LED_PIN_BOARD_GREEN_LD3);
 
     debug_printf("Hello from STM32L432xx!\n");
