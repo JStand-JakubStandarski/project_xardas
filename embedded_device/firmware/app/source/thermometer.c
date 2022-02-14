@@ -9,7 +9,7 @@
 /* HEADER FILES */
 /*****************************************************************************/
 
-#include "temperature.h"
+#include "thermometer.h"
 
 #include "FreeRTOS.h"
 #include "semphr.h"
