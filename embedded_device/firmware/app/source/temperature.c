@@ -48,6 +48,38 @@ static void timer_init(void);
 static float read_sensor_temperature(const uint32_t adc_measurement);
 
 
+
+/*****************************************************************************/
+/* RTOS TASK */
+/*****************************************************************************/
+
+static void thermometer_task(void *parameters)
+{
+    while (1) {
+        uint32_t adc_measurement = 0;
+        BaseType_t return_code = xTaskNotifyWait(0, ULONG_MAX,
+            &adc_measurement, portMAX_DELAY);
+        if (return_code == pdTRUE) {
+
+            if (thermometer_temperature_mutex != NULL) {
+
+                TickType_t time_to_wait_ms = 1000;
+                return_code = xSemaphoreTake(thermometer_temperature_mutex,
+                    pdMS_TO_TICKS(time_to_wait_ms));
+                if (return_code == pdTRUE) {
+
+                    thermometer_temperature = read_sensor_temperature(
+                        adc_measurement);
+
+                    xSemaphoreGive(thermometer_temperature_mutex);
+                }
+            }
+        }
+    }
+}
+
+
+
 /*****************************************************************************/
 /* PRIVATE HELPER FUNCTIONS DEFINITIONS */
 /*****************************************************************************/
@@ -195,4 +227,20 @@ static float read_sensor_temperature(const uint32_t adc_measurement)
 }
 
 
+
+/*****************************************************************************/
+/* IRQ HANDLERS DEFINITIONS */
+/*****************************************************************************/
+
+void ADC1_IRQHandler(void)
+{
+    if (LL_ADC_IsEnabledIT_EOC(ADC1)) {
+        uint16_t adc_measurement = LL_ADC_REG_ReadConversionData12(ADC1);
+
+        if (thermometer_task_handle != NULL) {
+            xTaskNotifyFromISR(thermometer_task_handle, adc_measurement,
+                eSetValueWithOverwrite, NULL);
+        }
+    }
+}
 
