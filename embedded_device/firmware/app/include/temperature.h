@@ -5,10 +5,11 @@
  * Date: 03.02.2022
  */
 
-#ifndef TEMPERATURE_H
-    #define TEMPERATURE_H
+#ifndef THERMOMETER_H
+    #define THERMOMETER_H
 
 
 
-#endif /* TEMPERATURE_H */
+
+#endif /* THERMOMETER_H */
 
