@@ -129,7 +129,7 @@ LINKER_SCRIPT_FILE = ./linker/stm32l432kc_flash.ld
 LINKER_OPTIONS = -Wl,--gc-sections
 LINKER_OPTIONS += -Wl,-Map="$(BUILD_DIR)/$(PROJECT_NAME)_firmware.map"
 LINKER_OPTIONS += -Wl,--print-memory-usage
-LINKER_OPTIONS += --specs=nosys.specs
+LINKER_OPTIONS += -specs=rdimon.specs -specs=nosys.specs
 
 
 LD = $(TOOLCHAIN_PATH)/bin/arm-none-eabi-gcc
