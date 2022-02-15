@@ -1,5 +1,5 @@
 /*
- * FreeRTOS Kernel <DEVELOPMENT BRANCH>
+ * FreeRTOS Kernel V10.4.6
  * Copyright (C) 2021 Amazon.com, Inc. or its affiliates.  All Rights Reserved.
  *
  * SPDX-License-Identifier: MIT
@@ -261,36 +261,6 @@ static void prvInitialiseNewQueue( const UBaseType_t uxQueueLength,
         }                                                  \
     }                                                      \
     taskEXIT_CRITICAL()
-
-/*
- * Macro to increment cTxLock member of the queue data structure. It is
- * capped at the number of tasks in the system as we cannot unblock more
- * tasks than the number of tasks in the system.
- */
-#define prvIncrementQueueTxLock( pxQueue, cTxLock )                           \
-    {                                                                         \
-        const UBaseType_t uxNumberOfTasks = uxTaskGetNumberOfTasks();         \
-        if( ( UBaseType_t ) ( cTxLock ) < uxNumberOfTasks )                   \
-        {                                                                     \
-            configASSERT( ( cTxLock ) != queueINT8_MAX );                     \
-            ( pxQueue )->cTxLock = ( int8_t ) ( ( cTxLock ) + ( int8_t ) 1 ); \
-        }                                                                     \
-    }
-
-/*
- * Macro to increment cRxLock member of the queue data structure. It is
- * capped at the number of tasks in the system as we cannot unblock more
- * tasks than the number of tasks in the system.
- */
-#define prvIncrementQueueRxLock( pxQueue, cRxLock )                           \
-    {                                                                         \
-        const UBaseType_t uxNumberOfTasks = uxTaskGetNumberOfTasks();         \
-        if( ( UBaseType_t ) ( cRxLock ) < uxNumberOfTasks )                   \
-        {                                                                     \
-            configASSERT( ( cRxLock ) != queueINT8_MAX );                     \
-            ( pxQueue )->cRxLock = ( int8_t ) ( ( cRxLock ) + ( int8_t ) 1 ); \
-        }                                                                     \
-    }
 /*-----------------------------------------------------------*/
 
 BaseType_t xQueueGenericReset( QueueHandle_t xQueue,
@@ -1192,7 +1162,9 @@ BaseType_t xQueueGenericSendFromISR( QueueHandle_t xQueue,
             {
                 /* Increment the lock count so the task that unlocks the queue
                  * knows that data was posted while it was locked. */
-                prvIncrementQueueTxLock( pxQueue, cTxLock );
+                configASSERT( cTxLock != queueINT8_MAX );
+
+                pxQueue->cTxLock = ( int8_t ) ( cTxLock + 1 );
             }
 
             xReturn = pdPASS;
@@ -1358,7 +1330,9 @@ BaseType_t xQueueGiveFromISR( QueueHandle_t xQueue,
             {
                 /* Increment the lock count so the task that unlocks the queue
                  * knows that data was posted while it was locked. */
-                prvIncrementQueueTxLock( pxQueue, cTxLock );
+                configASSERT( cTxLock != queueINT8_MAX );
+
+                pxQueue->cTxLock = ( int8_t ) ( cTxLock + 1 );
             }
 
             xReturn = pdPASS;
@@ -1964,7 +1938,9 @@ BaseType_t xQueueReceiveFromISR( QueueHandle_t xQueue,
             {
                 /* Increment the lock count so the task that unlocks the queue
                  * knows that data was removed while it was locked. */
-                prvIncrementQueueRxLock( pxQueue, cRxLock );
+                configASSERT( cRxLock != queueINT8_MAX );
+
+                pxQueue->cRxLock = ( int8_t ) ( cRxLock + 1 );
             }
 
             xReturn = pdPASS;
@@ -2780,9 +2756,10 @@ BaseType_t xQueueIsQueueFullFromISR( const QueueHandle_t xQueue )
                               const char * pcQueueName ) /*lint !e971 Unqualified char types are allowed for strings and single characters only. */
     {
         UBaseType_t ux;
-        QueueRegistryItem_t * pxEntryToWrite = NULL;
 
         configASSERT( xQueue );
+
+        QueueRegistryItem_t * pxEntryToWrite = NULL;
 
         if( pcQueueName != NULL )
         {
@@ -3082,7 +3059,9 @@ BaseType_t xQueueIsQueueFullFromISR( const QueueHandle_t xQueue )
             }
             else
             {
-                prvIncrementQueueTxLock( pxQueueSetContainer, cTxLock );
+                configASSERT( cTxLock != queueINT8_MAX );
+
+                pxQueueSetContainer->cTxLock = ( int8_t ) ( cTxLock + 1 );
             }
         }
         else
