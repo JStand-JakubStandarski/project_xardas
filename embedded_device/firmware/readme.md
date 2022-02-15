@@ -8,8 +8,7 @@
     - [WiFi module](#wifi-module)
 - [How to compile](#how-to-compile)
 - [How to flash](#how-to-flash)
-    - [st-flash method](#st-flash-method)
-    - [OpenOCD and GDB method](#openocd-and-gdb-method)
+- [How to debug](#how-to-debug)
 
 
 
@@ -60,7 +59,9 @@ STMicroelectronics.
 
 Very basic information about device firmware:
 
-- **Programming model**: bare-metal
+- **System architecture**: RTOS-based
+
+- **RTOS**: FreeRTOS
 
 - **Drivers package**: [STM32CubeL4](https://www.st.com/en/embedded-software/stm32cubel4.html)
 
@@ -91,48 +92,25 @@ $ make build
 
 ## HOW TO FLASH
 
-There are two ways to flash binaries into microcontroller memory.
-
-### ST-FLASH METHOD
-
-This method is super-simple, just run the following command:
+To flash firmware binary into device memory, you should run provided script
+called `flash.sh`, which can be found in `scripts` directory. Before the
+binary is flashed it is recompiled.
 
 ```sh
-$ make flash
-```
-
-Otherwise, if you want to erase everything from the microcontroller memory, run
-this command:
-
-```sh
-$ make erase
+$ sh flash.sh
 ```
 
 
-### OPENOCD AND GDB METHOD
 
-This method is more complicated than the `st-flash method`, nevertheless it's
-worth to become familiar with `OpenOCD` and `arm-none-eabi-gdb` software.
-Follow these steps:
+## HOW TO DEBUG
 
-1. Turn on `OpenOCD`:
-
-```sh
-$ /opt/openocd/bin/openocd -f /opt/openocd/scripts/board/st_nucleo_f4.cfg
-```
-
-2. Turn on `arm-none-eabi-gdb`:
+To start debugging using `arm-none-eabi-gdb` just run another script called
+`debug.sh` found inside `scripts` directory. This script compiles and flashes
+the binary into device memory, then establishes the connection using `openOCD`
+and opens `GDB` console from the used terminal. After opening debug session is
+halted at the very beginning of the program.
 
 ```sh
-$ /opt/gnu_arm_embedded_toolchain/10-2020-q4-major/bin/arm-none-eabi-gdb
-```
-
-3. Run the following commands (`arm-none-eabi-gdb` CLI):
-
-```sh
-$ target remote localhost:3333
-$ monitor reset init
-$ monitor flash write_image erase build/project_xardas_device_firmware.hex
-$ monitor reset run
+$ sh debug.sh
 ```
 
