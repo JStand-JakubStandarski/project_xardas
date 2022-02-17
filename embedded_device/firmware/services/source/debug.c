@@ -117,7 +117,21 @@ void debug_init(void)
     debug_uart_gpio_init();
     debug_uart_peripheral_init();
 
-    debug_message_buffer = circular_buffer_init();
+    debug_task_queue = xQueueCreate(DEBUG_MESSAGE_COUNT_MAX,
+        sizeof(struct debug_message));
+    uart_isr_queue = xQueueCreate(DEBUG_MESSAGE_COUNT_MAX,
+        sizeof(struct debug_message));
+    if ((debug_task_queue != NULL) && (uart_isr_queue != NULL)) {
+
+        xTaskCreate(debug_task, "debug_task", configMINIMAL_STACK_SIZE, NULL,
+            1, &debug_task_handle);
+
+        bool uart_bus_free = !(bool)LL_USART_IsEnabledIT_TXE(
+            DEBUG_UART_PERIPHERAL_PORT);
+        if (uart_bus_free) {
+            xTaskNotify(debug_task_handle, 0, eNoAction);
+        }
+    }
 }
 
 
