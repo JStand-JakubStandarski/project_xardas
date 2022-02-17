@@ -196,8 +196,9 @@ static void debug_uart_peripheral_init(void)
     };
     LL_USART_Init(DEBUG_UART_PERIPHERAL_PORT, &uart_peripheral_config);
 
-    LL_USART_Enable(DEBUG_UART_PERIPHERAL_PORT);
+    NVIC_SetPriority(DEBUG_UART_PERIPHERAL_IRQ, 44);
     NVIC_EnableIRQ(DEBUG_UART_PERIPHERAL_IRQ);
+    LL_USART_Enable(DEBUG_UART_PERIPHERAL_PORT);
 }
 
 
