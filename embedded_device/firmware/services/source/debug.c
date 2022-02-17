@@ -43,13 +43,29 @@
 #define DEBUG_UART_PERIPHERAL_CLOCK     LL_APB2_GRP1_PERIPH_USART1
 #define DEBUG_UART_PERIPHERAL_BAUDRATE  115200
 
+#define DEBUG_MESSAGE_COUNT_MAX 10
+#define DEBUG_MESSAGE_DATA_SIZE 64
+
 
 
 /*****************************************************************************/
-/* PRIVATE OBJECTS & HANDLES */
+/* PRIVATE STRUCTURES */
 /*****************************************************************************/
 
-static circular_buffer_t debug_message_buffer = NULL;
+struct debug_message {
+    char data[DEBUG_MESSAGE_DATA_SIZE];
+    size_t size;
+};
+
+
+
+/*****************************************************************************/
+/* PRIVATE VARIABLES */
+/*****************************************************************************/
+
+static TaskHandle_t debug_task_handle = NULL;
+static QueueHandle_t debug_task_queue = NULL;
+static QueueHandle_t uart_isr_queue = NULL;
 
 
 
