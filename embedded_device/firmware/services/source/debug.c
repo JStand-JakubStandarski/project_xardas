@@ -136,28 +136,22 @@ void debug_init(void)
 
 
 
-void debug_printf(const char *const text, ...)
+void debug_printf(const char *text, ...)
 {
-    size_t output_buffer_size = circular_buffer_get_free_space_size(
-        debug_message_buffer);
-    char *formatted_message = calloc(output_buffer_size, sizeof(char));
+    if (debug_task_queue != NULL) {
 
-    va_list arguments;
-    va_start(arguments, text);
-    vsnprintf(formatted_message, output_buffer_size, text, arguments);
-    va_end(arguments);
+        struct debug_message debug_message = {0};
 
-    size_t formatted_message_size = strlen(formatted_message);
-    if (formatted_message_size <= output_buffer_size) {
-        for (size_t char_index = 0; char_index < formatted_message_size;
-            ++char_index) {
-                circular_buffer_write_data(debug_message_buffer,
-                    formatted_message[char_index]);
-        }
-        LL_USART_EnableIT_TXE(DEBUG_UART_PERIPHERAL_PORT);
-    };
+        va_list arguments;
+        va_start(arguments, text);
+        vsnprintf(debug_message.data, DEBUG_MESSAGE_DATA_SIZE, text,
+            arguments);
+        va_end(arguments);
 
-    free(formatted_message);
+        debug_message.size = strlen(debug_message.data);
+
+        xQueueSend(debug_task_queue, (void *)&debug_message, 0);
+    }
 }
 
 
