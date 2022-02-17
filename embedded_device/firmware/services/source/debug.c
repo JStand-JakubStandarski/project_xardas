@@ -74,8 +74,37 @@ static QueueHandle_t uart_isr_queue = NULL;
 /*****************************************************************************/
 
 static void debug_uart_gpio_init(void);
-
 static void debug_uart_peripheral_init(void);
+
+
+
+/*****************************************************************************/
+/* RTOS TASK */
+/*****************************************************************************/
+
+static void debug_task(void *parameters)
+{
+    while (1) {
+
+        struct debug_message debug_message = {0};
+        BaseType_t new_message_received = xQueueReceive(debug_task_queue,
+            (void *)&debug_message, portMAX_DELAY);
+        if (new_message_received) {
+
+            bool uart_bus_free = (bool)xTaskNotifyWait(0, 0, NULL,
+                portMAX_DELAY);
+            if (uart_bus_free) {
+
+                BaseType_t message_sent_to_isr = xQueueSend(
+                    uart_isr_queue, (void *)&debug_message, portMAX_DELAY);
+                if (message_sent_to_isr) {
+
+                    LL_USART_EnableIT_TXE(DEBUG_UART_PERIPHERAL_PORT);
+                }
+            }
+        }
+    }
+}
 
 
 
