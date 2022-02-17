@@ -209,12 +209,38 @@ static void debug_uart_peripheral_init(void)
 
 void USART1_IRQHandler(void)
 {
-    if (LL_USART_IsActiveFlag_TXE(DEBUG_UART_PERIPHERAL_PORT) == 1) {
-        uint8_t data_byte = circular_buffer_read_data(debug_message_buffer);
-        LL_USART_TransmitData8(DEBUG_UART_PERIPHERAL_PORT, data_byte);
+    static struct debug_message debug_message = {0};
+    static size_t character_index = 0;
 
-        if (circular_buffer_is_empty(debug_message_buffer) == true) {
-            LL_USART_DisableIT_TXE(DEBUG_UART_PERIPHERAL_PORT);
+    if (LL_USART_IsActiveFlag_TXE(DEBUG_UART_PERIPHERAL_PORT) == 1) {
+
+        static bool transfer_ongoing = false;
+        if (transfer_ongoing) {
+
+            if (debug_message.size > 0) {
+
+                LL_USART_TransmitData8(DEBUG_UART_PERIPHERAL_PORT,
+                    debug_message.data[character_index]);
+                ++character_index;
+                --debug_message.size;
+
+            }
+
+            if (debug_message.size == 0) {
+
+                LL_USART_DisableIT_TXE(DEBUG_UART_PERIPHERAL_PORT);
+                xTaskNotifyFromISR(debug_task_handle, 0, eNoAction, NULL);
+                transfer_ongoing = false;
+            }
+        } else {
+
+            BaseType_t debug_message_available = xQueueReceiveFromISR(
+                uart_isr_queue, &debug_message, NULL);
+            if (debug_message_available) {
+
+                character_index = 0;
+                transfer_ongoing = true;
+            }
         }
     }
 }
