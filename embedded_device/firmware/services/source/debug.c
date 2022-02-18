@@ -215,6 +215,19 @@ void USART1_IRQHandler(void)
     if (LL_USART_IsActiveFlag_TXE(DEBUG_UART_PERIPHERAL_PORT) == 1) {
 
         static bool transfer_ongoing = false;
+        static bool request_new_message = true;
+        if (request_new_message) {
+
+            BaseType_t new_message_ready = xQueueReceiveFromISR(uart_isr_queue,
+                &debug_message, NULL);
+            if (new_message_ready) {
+
+                request_new_message = false;
+                transfer_ongoing = true;
+                character_index = 0;
+            }
+        }
+
         if (transfer_ongoing) {
 
             if (debug_message.size > 0) {
@@ -228,18 +241,12 @@ void USART1_IRQHandler(void)
 
             if (debug_message.size == 0) {
 
-                LL_USART_DisableIT_TXE(DEBUG_UART_PERIPHERAL_PORT);
-                xTaskNotifyFromISR(debug_task_handle, 0, eNoAction, NULL);
                 transfer_ongoing = false;
-            }
-        } else {
+                request_new_message = true;
 
-            BaseType_t debug_message_available = xQueueReceiveFromISR(
-                uart_isr_queue, &debug_message, NULL);
-            if (debug_message_available) {
+                LL_USART_DisableIT_TXE(DEBUG_UART_PERIPHERAL_PORT);
 
-                character_index = 0;
-                transfer_ongoing = true;
+                xTaskNotifyFromISR(debug_task_handle, 0, eNoAction, NULL);
             }
         }
     }
