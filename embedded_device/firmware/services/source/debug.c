@@ -129,6 +129,7 @@ void debug_init(void)
         bool uart_bus_free = !(bool)LL_USART_IsEnabledIT_TXE(
             DEBUG_UART_PERIPHERAL_PORT);
         if (uart_bus_free) {
+
             xTaskNotify(debug_task_handle, 0, eNoAction);
         }
     }
@@ -163,6 +164,7 @@ void debug_printf(const char *text, ...)
 static void debug_uart_gpio_init(void)
 {
     if (LL_AHB2_GRP1_IsEnabledClock(DEBUG_UART_GPIO_CLOCK) == 0) {
+
         LL_AHB2_GRP1_EnableClock(DEBUG_UART_GPIO_CLOCK);
     }
 
@@ -182,6 +184,7 @@ static void debug_uart_gpio_init(void)
 static void debug_uart_peripheral_init(void)
 {
     if (LL_APB2_GRP1_IsEnabledClock(DEBUG_UART_PERIPHERAL_CLOCK) == 0) {
+
         LL_APB2_GRP1_EnableClock(DEBUG_UART_PERIPHERAL_CLOCK);
     }
 
