@@ -33,7 +33,7 @@ void debug_init(void);
  *
  * @retval  None.
  */
-void debug_printf(const char *const text, ...);
+void debug_printf(const char *text, ...);
 
 
 

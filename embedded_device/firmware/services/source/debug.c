@@ -10,7 +10,10 @@
 /*****************************************************************************/
 
 #include "debug.h"
-#include "circular_buffer.h"
+
+#include "FreeRTOS.h"
+#include "task.h"
+#include "queue.h"
 
 #include "stm32l4xx_ll_bus.h"
 #include "stm32l4xx_ll_gpio.h"
@@ -20,6 +23,7 @@
 
 #include <stdarg.h>
 #include <stdlib.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <string.h>
 
@@ -39,13 +43,29 @@
 #define DEBUG_UART_PERIPHERAL_CLOCK     LL_APB2_GRP1_PERIPH_USART1
 #define DEBUG_UART_PERIPHERAL_BAUDRATE  115200
 
+#define DEBUG_MESSAGE_COUNT_MAX 10
+#define DEBUG_MESSAGE_DATA_SIZE 64
+
 
 
 /*****************************************************************************/
-/* PRIVATE OBJECTS & HANDLES */
+/* PRIVATE STRUCTURES */
 /*****************************************************************************/
 
-static circular_buffer_t debug_message_buffer = NULL;
+struct debug_message {
+    char data[DEBUG_MESSAGE_DATA_SIZE];
+    size_t size;
+};
+
+
+
+/*****************************************************************************/
+/* PRIVATE VARIABLES */
+/*****************************************************************************/
+
+static TaskHandle_t debug_task_handle = NULL;
+static QueueHandle_t debug_task_queue = NULL;
+static QueueHandle_t uart_isr_queue = NULL;
 
 
 
@@ -54,8 +74,37 @@ static circular_buffer_t debug_message_buffer = NULL;
 /*****************************************************************************/
 
 static void debug_uart_gpio_init(void);
-
 static void debug_uart_peripheral_init(void);
+
+
+
+/*****************************************************************************/
+/* RTOS TASK */
+/*****************************************************************************/
+
+static void debug_task(void *parameters)
+{
+    while (1) {
+
+        struct debug_message debug_message = {0};
+        BaseType_t new_message_received = xQueueReceive(debug_task_queue,
+            (void *)&debug_message, portMAX_DELAY);
+        if (new_message_received) {
+
+            bool uart_bus_free = (bool)xTaskNotifyWait(0, 0, NULL,
+                portMAX_DELAY);
+            if (uart_bus_free) {
+
+                BaseType_t message_sent_to_isr = xQueueSend(
+                    uart_isr_queue, (void *)&debug_message, portMAX_DELAY);
+                if (message_sent_to_isr) {
+
+                    LL_USART_EnableIT_TXE(DEBUG_UART_PERIPHERAL_PORT);
+                }
+            }
+        }
+    }
+}
 
 
 
@@ -68,33 +117,42 @@ void debug_init(void)
     debug_uart_gpio_init();
     debug_uart_peripheral_init();
 
-    debug_message_buffer = circular_buffer_init();
+    debug_task_queue = xQueueCreate(DEBUG_MESSAGE_COUNT_MAX,
+        sizeof(struct debug_message));
+    uart_isr_queue = xQueueCreate(DEBUG_MESSAGE_COUNT_MAX,
+        sizeof(struct debug_message));
+    if ((debug_task_queue != NULL) && (uart_isr_queue != NULL)) {
+
+        xTaskCreate(debug_task, "debug_task", configMINIMAL_STACK_SIZE, NULL,
+            1, &debug_task_handle);
+
+        bool uart_bus_free = !(bool)LL_USART_IsEnabledIT_TXE(
+            DEBUG_UART_PERIPHERAL_PORT);
+        if (uart_bus_free) {
+
+            xTaskNotify(debug_task_handle, 0, eNoAction);
+        }
+    }
 }
 
 
 
-void debug_printf(const char *const text, ...)
+void debug_printf(const char *text, ...)
 {
-    size_t output_buffer_size = circular_buffer_get_free_space_size(
-        debug_message_buffer);
-    char *formatted_message = calloc(output_buffer_size, sizeof(char));
+    if (debug_task_queue != NULL) {
 
-    va_list arguments;
-    va_start(arguments, text);
-    vsnprintf(formatted_message, output_buffer_size, text, arguments);
-    va_end(arguments);
+        struct debug_message debug_message = {0};
 
-    size_t formatted_message_size = strlen(formatted_message);
-    if (formatted_message_size <= output_buffer_size) {
-        for (size_t char_index = 0; char_index < formatted_message_size;
-            ++char_index) {
-                circular_buffer_write_data(debug_message_buffer,
-                    formatted_message[char_index]);
-        }
-        LL_USART_EnableIT_TXE(DEBUG_UART_PERIPHERAL_PORT);
-    };
+        va_list arguments;
+        va_start(arguments, text);
+        vsnprintf(debug_message.data, DEBUG_MESSAGE_DATA_SIZE, text,
+            arguments);
+        va_end(arguments);
 
-    free(formatted_message);
+        debug_message.size = strlen(debug_message.data);
+
+        xQueueSend(debug_task_queue, (void *)&debug_message, 0);
+    }
 }
 
 
@@ -106,6 +164,7 @@ void debug_printf(const char *const text, ...)
 static void debug_uart_gpio_init(void)
 {
     if (LL_AHB2_GRP1_IsEnabledClock(DEBUG_UART_GPIO_CLOCK) == 0) {
+
         LL_AHB2_GRP1_EnableClock(DEBUG_UART_GPIO_CLOCK);
     }
 
@@ -125,6 +184,7 @@ static void debug_uart_gpio_init(void)
 static void debug_uart_peripheral_init(void)
 {
     if (LL_APB2_GRP1_IsEnabledClock(DEBUG_UART_PERIPHERAL_CLOCK) == 0) {
+
         LL_APB2_GRP1_EnableClock(DEBUG_UART_PERIPHERAL_CLOCK);
     }
 
@@ -139,8 +199,9 @@ static void debug_uart_peripheral_init(void)
     };
     LL_USART_Init(DEBUG_UART_PERIPHERAL_PORT, &uart_peripheral_config);
 
-    LL_USART_Enable(DEBUG_UART_PERIPHERAL_PORT);
+    NVIC_SetPriority(DEBUG_UART_PERIPHERAL_IRQ, 44);
     NVIC_EnableIRQ(DEBUG_UART_PERIPHERAL_IRQ);
+    LL_USART_Enable(DEBUG_UART_PERIPHERAL_PORT);
 }
 
 
@@ -151,12 +212,45 @@ static void debug_uart_peripheral_init(void)
 
 void USART1_IRQHandler(void)
 {
-    if (LL_USART_IsActiveFlag_TXE(DEBUG_UART_PERIPHERAL_PORT) == 1) {
-        uint8_t data_byte = circular_buffer_read_data(debug_message_buffer);
-        LL_USART_TransmitData8(DEBUG_UART_PERIPHERAL_PORT, data_byte);
+    static struct debug_message debug_message = {0};
+    static size_t character_index = 0;
 
-        if (circular_buffer_is_empty(debug_message_buffer) == true) {
-            LL_USART_DisableIT_TXE(DEBUG_UART_PERIPHERAL_PORT);
+    if (LL_USART_IsActiveFlag_TXE(DEBUG_UART_PERIPHERAL_PORT) == 1) {
+
+        static bool transfer_ongoing = false;
+        static bool request_new_message = true;
+        if (request_new_message) {
+
+            BaseType_t new_message_ready = xQueueReceiveFromISR(uart_isr_queue,
+                &debug_message, NULL);
+            if (new_message_ready) {
+
+                request_new_message = false;
+                transfer_ongoing = true;
+                character_index = 0;
+            }
+        }
+
+        if (transfer_ongoing) {
+
+            if (debug_message.size > 0) {
+
+                LL_USART_TransmitData8(DEBUG_UART_PERIPHERAL_PORT,
+                    debug_message.data[character_index]);
+                ++character_index;
+                --debug_message.size;
+
+            }
+
+            if (debug_message.size == 0) {
+
+                transfer_ongoing = false;
+                request_new_message = true;
+
+                LL_USART_DisableIT_TXE(DEBUG_UART_PERIPHERAL_PORT);
+
+                xTaskNotifyFromISR(debug_task_handle, 0, eNoAction, NULL);
+            }
         }
     }
 }
