@@ -41,6 +41,18 @@ enum rtc_weekday {
 
 
 
+/*****************************************************************************/
+/* PUBLIC STRUCTURES */
+/*****************************************************************************/
+
+typedef struct rtc_time {
+    unsigned int hour;
+    unsigned int minute;
+    unsigned int second;
+}rtc_time_t;
+
+
+
 
 
 #endif /* RTC_H */
