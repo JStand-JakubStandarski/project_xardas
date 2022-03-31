@@ -56,6 +56,8 @@ static void enable_rtc_init_mode(void);
 static void disable_rtc_init_mode(void);
 
 
+static void set_time_in_rtc(const rtc_time_t rtc_time);
+
 
 
 /*****************************************************************************/
@@ -102,6 +104,18 @@ static void disable_rtc_init_mode(void)
     }
 
     LL_RTC_EnableWriteProtection(RTC);
+}
+
+
+
+static void set_time_in_rtc(const rtc_time_t rtc_time)
+{
+    const uint32_t hour_bcd = __LL_RTC_CONVERT_BIN2BCD(rtc_time.hour);
+    const uint32_t minute_bcd = __LL_RTC_CONVERT_BIN2BCD(rtc_time.minute);
+    const uint32_t second_bcd = __LL_RTC_CONVERT_BIN2BCD(rtc_time.second);
+
+    LL_RTC_TIME_Config(RTC, LL_RTC_TIME_FORMAT_AM_OR_24, hour_bcd, minute_bcd,
+        second_bcd);
 }
 
 
