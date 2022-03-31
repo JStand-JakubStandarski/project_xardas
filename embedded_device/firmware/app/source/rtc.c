@@ -62,6 +62,59 @@ static void set_date_in_rtc(const rtc_date_t rtc_date);
 
 
 
+/*****************************************************************************/
+/* RTOS TASK */
+/*****************************************************************************/
+
+static void rtc_task(void *parameters)
+{
+    while (1) {
+
+        static bool rtc_init_mode_on = false;
+
+        const UBaseType_t new_rtc_time_count = uxQueueMessagesWaiting(
+            rtc_time_queue);
+        const UBaseType_t new_rtc_date_count = uxQueueMessagesWaiting(
+            rtc_date_queue);
+        if ((new_rtc_time_count > 0) || (new_rtc_date_count > 0)) {
+
+            if (!rtc_init_mode_on) {
+
+                enable_rtc_init_mode();
+                rtc_init_mode_on = true;
+            }
+
+            rtc_time_t rtc_time = {0};
+            const BaseType_t new_rtc_time_received = xQueueReceive(
+                rtc_time_queue, &rtc_time, 0);
+            if (new_rtc_time_received) {
+
+                set_time_in_rtc(rtc_time);
+            }
+
+            rtc_date_t rtc_date = {0};
+            const BaseType_t new_rtc_date_received = xQueueReceive(
+                rtc_date_queue, &rtc_date, 0);
+            if (new_rtc_date_received) {
+
+                set_date_in_rtc(rtc_date);
+            }
+
+        } else {
+
+            if (rtc_init_mode_on) {
+
+                disable_rtc_init_mode();
+                rtc_init_mode_on = false;
+            }
+
+            vTaskSuspend(NULL);
+        }
+    }
+}
+
+
+
 
 
 /*****************************************************************************/
