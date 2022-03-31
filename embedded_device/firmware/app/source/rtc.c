@@ -183,6 +183,15 @@ rtc_date_t rtc_get_date(void)
 
 
 
+void rtc_set_date(const rtc_date_t rtc_date)
+{
+    const BaseType_t item_sent = xQueueSend(rtc_date_queue, &rtc_date, 0);
+    if (item_sent) {
+
+        vTaskResume(rtc_task_handle);
+    }
+}
+
 
 
 /*****************************************************************************/

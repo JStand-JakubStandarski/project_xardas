@@ -110,5 +110,18 @@ void rtc_set_time(const rtc_time_t rtc_time);
  */
 rtc_date_t rtc_get_date(void);
 
+
+
+/**
+ * @brief   Set RTC date (year, month, day and weekday).
+ *
+ * @param   RTC date structure @ref rtc_date_t.
+ *
+ * @retval  None.
+ */
+void rtc_set_date(const rtc_date_t rtc_date);
+
+
+
 #endif /* RTC_H */
 
