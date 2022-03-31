@@ -35,3 +35,15 @@
 
 
 
+/*****************************************************************************/
+/* PRIVATE VARIABLES */
+/*****************************************************************************/
+
+static TaskHandle_t rtc_task_handle = NULL;
+
+static QueueHandle_t rtc_time_queue = NULL;
+
+static QueueHandle_t rtc_date_queue = NULL;
+
+
+
