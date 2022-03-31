@@ -29,6 +29,18 @@ enum rtc_month {
 
 
 
+enum rtc_weekday {
+    RTC_WEEKDAY_MONDAY = 1,
+    RTC_WEEKDAY_TUESDAY,
+    RTC_WEEKDAY_WEDNESDAY,
+    RTC_WEEKDAY_THURSDAY,
+    RTC_WEEKDAY_FRIDAY,
+    RTC_WEEKDAY_SATURDAY,
+    RTC_WEEKDAY_SUNDAY
+};
+
+
+
 
 
 #endif /* RTC_H */
