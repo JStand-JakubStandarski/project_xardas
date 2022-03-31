@@ -53,6 +53,15 @@ typedef struct rtc_time {
 
 
 
+typedef struct rtc_date {
+    unsigned int year;
+    enum rtc_month month;
+    unsigned int day;
+    enum rtc_weekday weekday;
+}rtc_date_t;
+
+
+
 
 
 #endif /* RTC_H */
