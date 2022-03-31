@@ -58,6 +58,10 @@ static void disable_rtc_init_mode(void);
 
 static void set_time_in_rtc(const rtc_time_t rtc_time);
 
+static void set_date_in_rtc(const rtc_date_t rtc_date);
+
+
+
 
 
 /*****************************************************************************/
@@ -119,4 +123,15 @@ static void set_time_in_rtc(const rtc_time_t rtc_time)
 }
 
 
+
+static void set_date_in_rtc(const rtc_date_t rtc_date)
+{
+    const uint32_t year_bcd = __LL_RTC_CONVERT_BIN2BCD(rtc_date.year -
+        RTC_YEAR_OFFSET);
+    const uint32_t month_bcd = __LL_RTC_CONVERT_BIN2BCD(rtc_date.month);
+    const uint32_t day_bcd = __LL_RTC_CONVERT_BIN2BCD(rtc_date.day);
+    const uint32_t weekday_bcd = __LL_RTC_CONVERT_BIN2BCD(rtc_date.weekday);
+
+    LL_RTC_DATE_Config(RTC, weekday_bcd, day_bcd, month_bcd, year_bcd);
+}
 
