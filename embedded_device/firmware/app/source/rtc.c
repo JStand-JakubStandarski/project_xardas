@@ -166,6 +166,23 @@ void rtc_set_time(const rtc_time_t rtc_time)
 
 
 
+rtc_date_t rtc_get_date(void)
+{
+    const uint32_t date_bcd = LL_RTC_DATE_Get(RTC);
+
+    const rtc_date_t current_date = {
+        .year = __LL_RTC_CONVERT_BCD2BIN(__LL_RTC_GET_YEAR(date_bcd)) +
+            RTC_YEAR_OFFSET,
+        .month = __LL_RTC_CONVERT_BCD2BIN(__LL_RTC_GET_MONTH(date_bcd)),
+        .day = __LL_RTC_CONVERT_BCD2BIN(__LL_RTC_GET_DAY(date_bcd)),
+        .weekday = __LL_RTC_CONVERT_BCD2BIN(__LL_RTC_GET_WEEKDAY(date_bcd))
+    };
+
+    return current_date;
+}
+
+
+
 
 
 /*****************************************************************************/
