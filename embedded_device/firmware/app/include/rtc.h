@@ -88,5 +88,16 @@ void rtc_init(void);
  */
 rtc_time_t rtc_get_time(void);
 
+
+
+/**
+ * @brief   Set RTC time (hour, minute and second).
+ *
+ * @param   RTC time structure @ref rtc_time_t.
+ *
+ * @retval  None.
+ */
+void rtc_set_time(const rtc_time_t rtc_time);
+
 #endif /* RTC_H */
 

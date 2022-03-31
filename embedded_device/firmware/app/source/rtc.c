@@ -155,6 +155,17 @@ rtc_time_t rtc_get_time(void)
 
 
 
+void rtc_set_time(const rtc_time_t rtc_time)
+{
+    const BaseType_t item_sent = xQueueSend(rtc_time_queue, &rtc_time, 0);
+    if (item_sent) {
+
+        vTaskResume(rtc_task_handle);
+    }
+}
+
+
+
 
 
 /*****************************************************************************/
