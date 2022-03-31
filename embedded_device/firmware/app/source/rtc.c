@@ -140,6 +140,21 @@ void rtc_init(void)
 
 
 
+rtc_time_t rtc_get_time(void)
+{
+    const uint32_t time_bcd = LL_RTC_TIME_Get(RTC);
+
+    const rtc_time_t current_time = {
+        .hour = __LL_RTC_CONVERT_BCD2BIN(__LL_RTC_GET_HOUR(time_bcd)),
+        .minute = __LL_RTC_CONVERT_BCD2BIN(__LL_RTC_GET_MINUTE(time_bcd)),
+        .second = __LL_RTC_CONVERT_BCD2BIN(__LL_RTC_GET_SECOND(time_bcd))
+    };
+
+    return current_time;
+}
+
+
+
 
 
 /*****************************************************************************/

@@ -79,5 +79,14 @@ void rtc_init(void);
 
 
 
+/**
+ * @brief   Get RTC time (hour, minute and second).
+ *
+ * @param   None.
+ *
+ * @retval  RTC time structre @ref rtc_time_t.
+ */
+rtc_time_t rtc_get_time(void);
+
 #endif /* RTC_H */
 
