@@ -53,6 +53,9 @@ static QueueHandle_t rtc_date_queue = NULL;
 
 static void enable_rtc_init_mode(void);
 
+static void disable_rtc_init_mode(void);
+
+
 
 
 /*****************************************************************************/
@@ -75,6 +78,30 @@ static void enable_rtc_init_mode(void)
             rtc_init_mode_off = !LL_RTC_IsActiveFlag_INIT(RTC);
         }
     }
+}
+
+
+
+static void disable_rtc_init_mode(void)
+{
+    LL_RTC_DisableInitMode(RTC);
+
+    bool shadow_registers_bypass_off = !LL_RTC_IsShadowRegBypassEnabled(RTC);
+    if (shadow_registers_bypass_off) {
+
+        LL_RTC_ClearFlag_RS(RTC);
+
+        bool time_and_date_registers_desynchronized =
+            !LL_RTC_IsActiveFlag_RS(RTC);
+        while (time_and_date_registers_desynchronized) {
+
+            vTaskDelay(pdMS_TO_TICKS(1));
+            time_and_date_registers_desynchronized =
+                !LL_RTC_IsActiveFlag_RS(RTC);
+        }
+    }
+
+    LL_RTC_EnableWriteProtection(RTC);
 }
 
 
