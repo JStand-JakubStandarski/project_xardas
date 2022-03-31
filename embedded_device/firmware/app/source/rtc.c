@@ -115,6 +115,31 @@ static void rtc_task(void *parameters)
 
 
 
+/*****************************************************************************/
+/* PUBLIC API */
+/*****************************************************************************/
+
+void rtc_init(void)
+{
+    LL_RTC_InitTypeDef rtc_init_config = {
+        .HourFormat = LL_RTC_HOURFORMAT_24HOUR,
+        .AsynchPrescaler = 127,
+        .SynchPrescaler = 255
+    };
+    LL_RTC_Init(RTC, &rtc_init_config);
+
+    LL_RTC_EnableRefClock(RTC);
+
+    xTaskCreate(rtc_task, "rtc_task", configMINIMAL_STACK_SIZE, NULL, 2,
+        &rtc_task_handle);
+
+    rtc_time_queue = xQueueCreate(5, sizeof(rtc_time_t));
+
+    rtc_date_queue = xQueueCreate(5, sizeof(rtc_date_t));
+}
+
+
+
 
 
 /*****************************************************************************/

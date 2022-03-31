@@ -62,6 +62,21 @@ typedef struct rtc_date {
 
 
 
+/*****************************************************************************/
+/* PUBLIC API */
+/*****************************************************************************/
+
+/**
+ * @brief   Initialize RTC (Real-Time Clock). Its time and date are set to
+ *          default values, i.e. 00:00:00 00-00-2000. RTC counts years from 00
+ *          to 99, but we have to add offset of 2000 to make date correct.
+ *
+ * @param   None.
+ *
+ * @retval  None.
+ */
+void rtc_init(void);
+
 
 
 #endif /* RTC_H */
