@@ -54,6 +54,8 @@ void system_init(void)
         ;
     }
 
+    config_pwr();
+
     LL_RCC_MSI_Enable();
     while (LL_RCC_MSI_IsReady() != FLAG_STATE_SET) {
         ;
@@ -93,6 +95,14 @@ void system_init(void)
     LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_1);
     LL_RCC_SetAPB1Prescaler(LL_RCC_APB1_DIV_1);
     LL_RCC_SetAPB2Prescaler(LL_RCC_APB2_DIV_1);
+
+    get_access_to_backup_domain_control_register();
+    config_lse();
+    config_rtc();
+}
+
+
+
 /*****************************************************************************/
 /* PRIVATE HELPER FUNCTIONS DEFINITIONS */
 /*****************************************************************************/
