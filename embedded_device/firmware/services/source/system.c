@@ -15,6 +15,7 @@
 
 #include "stm32l4xx_ll_rcc.h"
 #include "stm32l4xx_ll_bus.h"
+#include "stm32l4xx_ll_pwr.h"
 #include "stm32l4xx_ll_system.h"
 #include "stm32l4xx_ll_utils.h"
 
@@ -25,6 +26,14 @@
 /*****************************************************************************/
 
 static const uint32_t system_clock_speed_hz = 80000000u;
+
+
+
+/*****************************************************************************/
+/* PRIVATE HELPER FUNCTIONS PROTOTYPES */
+/*****************************************************************************/
+
+static void get_access_to_backup_domain_control_register(void);
 
 
 
@@ -78,5 +87,19 @@ void system_init(void)
     LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_1);
     LL_RCC_SetAPB1Prescaler(LL_RCC_APB1_DIV_1);
     LL_RCC_SetAPB2Prescaler(LL_RCC_APB2_DIV_1);
+/*****************************************************************************/
+/* PRIVATE HELPER FUNCTIONS DEFINITIONS */
+/*****************************************************************************/
+
+static void get_access_to_backup_domain_control_register(void)
+{
+    LL_PWR_EnableBkUpAccess();
+
+    LL_RCC_ForceBackupDomainReset();
+    LL_RCC_ReleaseBackupDomainReset();
+}
+
+
+
 }
 
