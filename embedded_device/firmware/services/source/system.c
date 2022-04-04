@@ -37,6 +37,8 @@ static void get_access_to_backup_domain_control_register(void);
 
 static void config_pwr(void);
 
+static void config_lse(void);
+
 
 
 /*****************************************************************************/
@@ -108,6 +110,18 @@ static void config_pwr(void)
     LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_PWR);
 
     LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE1);
+}
+
+
+
+static void config_lse(void)
+{
+    LL_RCC_LSE_SetDriveCapability(LL_RCC_LSEDRIVE_LOW);
+
+    LL_RCC_LSE_Enable();
+    while (LL_RCC_LSE_IsReady() != 1) {
+        ;
+    }
 }
 
 
