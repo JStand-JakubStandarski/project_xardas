@@ -13,6 +13,7 @@
 #include "rtc.h"
 
 #include "FreeRTOS.h"
+#include "semphr.h"
 #include "task.h"
 #include "queue.h"
 
@@ -44,6 +45,8 @@ static TaskHandle_t rtc_task_handle = NULL;
 static QueueHandle_t rtc_time_queue = NULL;
 
 static QueueHandle_t rtc_date_queue = NULL;
+
+static SemaphoreHandle_t rtc_registers_mutex = NULL;
 
 
 
@@ -136,13 +139,24 @@ void rtc_init(void)
     rtc_time_queue = xQueueCreate(5, sizeof(rtc_time_t));
 
     rtc_date_queue = xQueueCreate(5, sizeof(rtc_date_t));
+
+    rtc_registers_mutex = xSemaphoreCreateMutex();
 }
 
 
 
-rtc_time_t rtc_get_time(void)
+rtc_time_t rtc_get_time(const unsigned int function_call_delay_ms)
 {
-    const uint32_t time_bcd = LL_RTC_TIME_Get(RTC);
+    uint32_t time_bcd = 0;
+
+    const BaseType_t mutex_taken = xSemaphoreTake(rtc_registers_mutex,
+        pdMS_TO_TICKS(function_call_delay_ms));
+    if (mutex_taken) {
+
+        time_bcd = LL_RTC_TIME_Get(RTC);
+
+        xSemaphoreGive(rtc_registers_mutex);
+    }
 
     const rtc_time_t current_time = {
         .hour = __LL_RTC_CONVERT_BCD2BIN(__LL_RTC_GET_HOUR(time_bcd)),
@@ -155,9 +169,11 @@ rtc_time_t rtc_get_time(void)
 
 
 
-void rtc_set_time(const rtc_time_t rtc_time)
+void rtc_set_time(const rtc_time_t rtc_time,
+    const unsigned int function_call_delay_ms)
 {
-    const BaseType_t item_sent = xQueueSend(rtc_time_queue, &rtc_time, 0);
+    const BaseType_t item_sent = xQueueSend(rtc_time_queue, &rtc_time,
+        pdMS_TO_TICKS(function_call_delay_ms));
     if (item_sent) {
 
         vTaskResume(rtc_task_handle);
@@ -166,9 +182,18 @@ void rtc_set_time(const rtc_time_t rtc_time)
 
 
 
-rtc_date_t rtc_get_date(void)
+rtc_date_t rtc_get_date(const unsigned int function_call_delay_ms)
 {
-    const uint32_t date_bcd = LL_RTC_DATE_Get(RTC);
+    uint32_t date_bcd = 0;
+
+    const BaseType_t mutex_taken = xSemaphoreTake(rtc_registers_mutex,
+        pdMS_TO_TICKS(function_call_delay_ms));
+    if (mutex_taken) {
+
+        date_bcd = LL_RTC_DATE_Get(RTC);
+
+        xSemaphoreGive(rtc_registers_mutex);
+    }
 
     const rtc_date_t current_date = {
         .year = __LL_RTC_CONVERT_BCD2BIN(__LL_RTC_GET_YEAR(date_bcd)) +
@@ -183,9 +208,11 @@ rtc_date_t rtc_get_date(void)
 
 
 
-void rtc_set_date(const rtc_date_t rtc_date)
+void rtc_set_date(const rtc_date_t rtc_date,
+    const unsigned int function_call_delay_ms)
 {
-    const BaseType_t item_sent = xQueueSend(rtc_date_queue, &rtc_date, 0);
+    const BaseType_t item_sent = xQueueSend(rtc_date_queue, &rtc_date,
+        pdMS_TO_TICKS(function_call_delay_ms));
     if (item_sent) {
 
         vTaskResume(rtc_task_handle);
@@ -200,19 +227,26 @@ void rtc_set_date(const rtc_date_t rtc_date)
 
 static void enable_rtc_init_mode(void)
 {
-    LL_RTC_DisableWriteProtection(RTC);
+    const BaseType_t mutex_taken = xSemaphoreTake(rtc_registers_mutex,
+        portMAX_DELAY);
+    if (mutex_taken) {
 
-    bool rtc_init_mode_off = !LL_RTC_IsActiveFlag_INIT(RTC);
-    if (rtc_init_mode_off) {
+        LL_RTC_DisableWriteProtection(RTC);
 
-        LL_RTC_EnableInitMode(RTC);
+        bool rtc_init_mode_off = !LL_RTC_IsActiveFlag_INIT(RTC);
+        if (rtc_init_mode_off) {
 
-        rtc_init_mode_off = !LL_RTC_IsActiveFlag_INIT(RTC);
-        while (rtc_init_mode_off) {
+            LL_RTC_EnableInitMode(RTC);
 
-            vTaskDelay(pdMS_TO_TICKS(1));
             rtc_init_mode_off = !LL_RTC_IsActiveFlag_INIT(RTC);
+            while (rtc_init_mode_off) {
+
+                vTaskDelay(pdMS_TO_TICKS(1));
+                rtc_init_mode_off = !LL_RTC_IsActiveFlag_INIT(RTC);
+            }
         }
+
+        xSemaphoreGive(rtc_registers_mutex);
     }
 }
 
@@ -220,24 +254,31 @@ static void enable_rtc_init_mode(void)
 
 static void disable_rtc_init_mode(void)
 {
-    LL_RTC_DisableInitMode(RTC);
+    const BaseType_t mutex_taken = xSemaphoreTake(rtc_registers_mutex,
+        portMAX_DELAY);
+    if (mutex_taken) {
+        LL_RTC_DisableInitMode(RTC);
 
-    bool shadow_registers_bypass_off = !LL_RTC_IsShadowRegBypassEnabled(RTC);
-    if (shadow_registers_bypass_off) {
+        bool shadow_registers_bypass_off = !LL_RTC_IsShadowRegBypassEnabled(
+            RTC);
+        if (shadow_registers_bypass_off) {
 
-        LL_RTC_ClearFlag_RS(RTC);
+            LL_RTC_ClearFlag_RS(RTC);
 
-        bool time_and_date_registers_desynchronized =
-            !LL_RTC_IsActiveFlag_RS(RTC);
-        while (time_and_date_registers_desynchronized) {
-
-            vTaskDelay(pdMS_TO_TICKS(1));
-            time_and_date_registers_desynchronized =
+            bool time_and_date_registers_desynchronized =
                 !LL_RTC_IsActiveFlag_RS(RTC);
-        }
-    }
+            while (time_and_date_registers_desynchronized) {
 
-    LL_RTC_EnableWriteProtection(RTC);
+                vTaskDelay(pdMS_TO_TICKS(1));
+                time_and_date_registers_desynchronized =
+                    !LL_RTC_IsActiveFlag_RS(RTC);
+            }
+        }
+
+        LL_RTC_EnableWriteProtection(RTC);
+
+        xSemaphoreGive(rtc_registers_mutex);
+    }
 }
 
 
@@ -248,8 +289,15 @@ static void set_time_in_rtc(const rtc_time_t rtc_time)
     const uint32_t minute_bcd = __LL_RTC_CONVERT_BIN2BCD(rtc_time.minute);
     const uint32_t second_bcd = __LL_RTC_CONVERT_BIN2BCD(rtc_time.second);
 
-    LL_RTC_TIME_Config(RTC, LL_RTC_TIME_FORMAT_AM_OR_24, hour_bcd, minute_bcd,
-        second_bcd);
+    const BaseType_t mutex_taken = xSemaphoreTake(rtc_registers_mutex,
+        portMAX_DELAY);
+    if (mutex_taken) {
+
+        LL_RTC_TIME_Config(RTC, LL_RTC_TIME_FORMAT_AM_OR_24, hour_bcd,
+            minute_bcd, second_bcd);
+
+        xSemaphoreGive(rtc_registers_mutex);
+    }
 }
 
 
@@ -262,6 +310,13 @@ static void set_date_in_rtc(const rtc_date_t rtc_date)
     const uint32_t day_bcd = __LL_RTC_CONVERT_BIN2BCD(rtc_date.day);
     const uint32_t weekday_bcd = __LL_RTC_CONVERT_BIN2BCD(rtc_date.weekday);
 
-    LL_RTC_DATE_Config(RTC, weekday_bcd, day_bcd, month_bcd, year_bcd);
+    const BaseType_t mutex_taken = xSemaphoreTake(rtc_registers_mutex,
+        portMAX_DELAY);
+    if (mutex_taken) {
+
+        LL_RTC_DATE_Config(RTC, weekday_bcd, day_bcd, month_bcd, year_bcd);
+
+        xSemaphoreGive(rtc_registers_mutex);
+    }
 }
 

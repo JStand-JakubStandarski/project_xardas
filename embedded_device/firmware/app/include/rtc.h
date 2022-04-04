@@ -82,33 +82,39 @@ void rtc_init(void);
 /**
  * @brief   Get RTC time (hour, minute and second).
  *
- * @param   None.
+ * @param   function_call_delay_ms - acceptable time delay in milliseconds to
+ *                                   perfom function call.
  *
  * @retval  RTC time structre @ref rtc_time_t.
  */
-rtc_time_t rtc_get_time(void);
+rtc_time_t rtc_get_time(const unsigned int function_call_delay_ms);
 
 
 
 /**
  * @brief   Set RTC time (hour, minute and second).
  *
- * @param   RTC time structure @ref rtc_time_t.
+ * @param   rtc_time - RTC time structure @ref rtc_time_t.
+ *
+ * @param   function_call_delay_ms - acceptable time delay in milliseconds to
+ *                                   perfom function call.
  *
  * @retval  None.
  */
-void rtc_set_time(const rtc_time_t rtc_time);
+void rtc_set_time(const rtc_time_t rtc_time,
+    const unsigned int function_call_delay_ms);
 
 
 
 /**
  * @brief   Get RTC date (year, month, day and weekday).
  *
- * @param   None.
+ * @param   function_call_delay_ms - acceptable time delay in milliseconds to
+ *                                   perfom function call.
  *
  * @retval  RTC date structure @ref rtc_date_t.
  */
-rtc_date_t rtc_get_date(void);
+rtc_date_t rtc_get_date(const unsigned int function_call_delay_ms);
 
 
 
@@ -117,9 +123,13 @@ rtc_date_t rtc_get_date(void);
  *
  * @param   RTC date structure @ref rtc_date_t.
  *
+ * @param   function_call_delay_ms - acceptable time delay in milliseconds to
+ *                                   perfom function call.
+ *
  * @retval  None.
  */
-void rtc_set_date(const rtc_date_t rtc_date);
+void rtc_set_date(const rtc_date_t rtc_date,
+    const unsigned int function_call_delay_ms);
 
 
 
