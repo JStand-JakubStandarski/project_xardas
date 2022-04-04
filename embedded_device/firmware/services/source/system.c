@@ -39,6 +39,8 @@ static void config_pwr(void);
 
 static void config_lse(void);
 
+static void config_rtc(void);
+
 
 
 /*****************************************************************************/
@@ -126,5 +128,9 @@ static void config_lse(void)
 
 
 
+static void config_rtc(void)
+{
+    LL_RCC_SetRTCClockSource(LL_RCC_RTC_CLKSOURCE_LSE);
+    LL_RCC_EnableRTC();
 }
 
