@@ -35,6 +35,8 @@ static const uint32_t system_clock_speed_hz = 80000000u;
 
 static void get_access_to_backup_domain_control_register(void);
 
+static void config_pwr(void);
+
 
 
 /*****************************************************************************/
@@ -97,6 +99,15 @@ static void get_access_to_backup_domain_control_register(void)
 
     LL_RCC_ForceBackupDomainReset();
     LL_RCC_ReleaseBackupDomainReset();
+}
+
+
+
+static void config_pwr(void)
+{
+    LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_PWR);
+
+    LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE1);
 }
 
 
