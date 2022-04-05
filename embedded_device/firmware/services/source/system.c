@@ -15,6 +15,7 @@
 
 #include "stm32l4xx_ll_rcc.h"
 #include "stm32l4xx_ll_bus.h"
+#include "stm32l4xx_ll_pwr.h"
 #include "stm32l4xx_ll_system.h"
 #include "stm32l4xx_ll_utils.h"
 
@@ -29,6 +30,20 @@ static const uint32_t system_clock_speed_hz = 80000000u;
 
 
 /*****************************************************************************/
+/* PRIVATE HELPER FUNCTIONS PROTOTYPES */
+/*****************************************************************************/
+
+static void get_access_to_backup_domain_control_register(void);
+
+static void config_pwr(void);
+
+static void config_lse(void);
+
+static void config_rtc(void);
+
+
+
+/*****************************************************************************/
 /* PUBLIC API */
 /*****************************************************************************/
 
@@ -38,6 +53,8 @@ void system_init(void)
     while (LL_FLASH_GetLatency() != LL_FLASH_LATENCY_4) {
         ;
     }
+
+    config_pwr();
 
     LL_RCC_MSI_Enable();
     while (LL_RCC_MSI_IsReady() != FLAG_STATE_SET) {
@@ -78,5 +95,52 @@ void system_init(void)
     LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_1);
     LL_RCC_SetAPB1Prescaler(LL_RCC_APB1_DIV_1);
     LL_RCC_SetAPB2Prescaler(LL_RCC_APB2_DIV_1);
+
+    get_access_to_backup_domain_control_register();
+    config_lse();
+    config_rtc();
+}
+
+
+
+/*****************************************************************************/
+/* PRIVATE HELPER FUNCTIONS DEFINITIONS */
+/*****************************************************************************/
+
+static void get_access_to_backup_domain_control_register(void)
+{
+    LL_PWR_EnableBkUpAccess();
+
+    LL_RCC_ForceBackupDomainReset();
+    LL_RCC_ReleaseBackupDomainReset();
+}
+
+
+
+static void config_pwr(void)
+{
+    LL_APB1_GRP1_EnableClock(LL_APB1_GRP1_PERIPH_PWR);
+
+    LL_PWR_SetRegulVoltageScaling(LL_PWR_REGU_VOLTAGE_SCALE1);
+}
+
+
+
+static void config_lse(void)
+{
+    LL_RCC_LSE_SetDriveCapability(LL_RCC_LSEDRIVE_LOW);
+
+    LL_RCC_LSE_Enable();
+    while (LL_RCC_LSE_IsReady() != 1) {
+        ;
+    }
+}
+
+
+
+static void config_rtc(void)
+{
+    LL_RCC_SetRTCClockSource(LL_RCC_RTC_CLKSOURCE_LSE);
+    LL_RCC_EnableRTC();
 }
 
